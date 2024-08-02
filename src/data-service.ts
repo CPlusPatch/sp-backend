@@ -10,6 +10,8 @@ interface DataRow {
     banner_image: string;
     links: string[];
     content: string;
+    title: string;
+    created_at: string;
 }
 
 const rowSchema = z.object({
@@ -18,6 +20,8 @@ const rowSchema = z.object({
     banner_image: z.string(),
     links: z.array(z.string()),
     content: z.string(),
+    title: z.string(),
+    created_at: z.string(),
 });
 
 /**
@@ -40,14 +44,17 @@ export class DataService {
      */
     private initializeTable(): void {
         this.db.run(`
-      CREATE TABLE IF NOT EXISTS data_rows (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tags TEXT NOT NULL,
-        banner_image TEXT NOT NULL,
-        links TEXT NOT NULL,
-        content TEXT NOT NULL
-      )
-    `);
+            CREATE TABLE IF NOT EXISTS data_rows (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tags JSON NOT NULL DEFAULT '[]',
+                banner_image TEXT NOT NULL,
+                links JSON NOT NULL DEFAULT '[]',
+                content TEXT NOT NULL,
+                title TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (id)
+            )
+        `);
         this.db.exec("PRAGMA journal_mode = WAL;");
     }
 
@@ -77,7 +84,7 @@ export class DataService {
      * @param row - The DataRow object to insert.
      * @returns The ID of the newly inserted row.
      */
-    public insertRow(row: Omit<DataRow, "id">): number {
+    public insertRow(row: Omit<DataRow, "id" | "created_at">): number {
         const { tags, banner_image, links, content } = row;
         const stmt = this.db.prepare(`
       INSERT INTO data_rows (tags, banner_image, links, content)
@@ -98,7 +105,10 @@ export class DataService {
      * @param row - The updated DataRow object.
      * @returns True if the update was successful, false otherwise.
      */
-    public updateRow(id: number, row: Omit<DataRow, "id">): boolean {
+    public updateRow(
+        id: number,
+        row: Omit<DataRow, "id" | "created_at">,
+    ): boolean {
         const { tags, banner_image, links, content } = row;
         const stmt = this.db.prepare(`
       UPDATE data_rows
@@ -132,7 +142,19 @@ export class DataService {
      * @returns A DataRow object.
      */
     private parseRow(row: unknown): DataRow {
-        const parsed = rowSchema.safeParse(row);
+        if (typeof row !== "object" || row === null) {
+            throw new Error("Invalid row data");
+        }
+
+        const parsed = rowSchema.safeParse({
+            ...row,
+            tags: (row as Record<string, unknown>).tags
+                ? JSON.parse((row as Record<string, unknown>).tags as string)
+                : undefined,
+            links: (row as Record<string, unknown>).links
+                ? JSON.parse((row as Record<string, unknown>).links as string)
+                : undefined,
+        });
         if (!parsed.success) {
             throw new Error(`Invalid row data: ${parsed.error.message}`);
         }

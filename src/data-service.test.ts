@@ -40,6 +40,7 @@ describe("DataService", () => {
             banner_image: "test.jpg",
             links: ["https://example.com"],
             content: "Test content",
+            title: "Test title",
         };
         const id = dataService.insertRow(newRow);
         expect(id).toBe(1);
@@ -52,6 +53,7 @@ describe("DataService", () => {
             banner_image: "updated.jpg",
             links: ["https://updated.com"],
             content: "Updated content",
+            title: "Updated title",
         };
         const success = dataService.updateRow(1, updatedRow);
         expect(success).toBe(true);
