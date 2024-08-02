@@ -1,0 +1,33 @@
+{
+    "name": "sp-backend",
+    "private": true,
+    "version": "0.1.0",
+    "scripts": {
+        "lint": "bunx @biomejs/biome check .",
+        "dev": "bun run --hot src/index.ts",
+        "build": "bun run build.ts"
+    },
+    "readme": "README.md",
+    "license": "AGPL-3.0-or-later",
+    "categories": ["Other"],
+    "type": "module",
+    "engines": {
+        "bun": ">=1.1.18"
+    },
+    "packageManager": "bun@1.1.18",
+    "dependencies": {
+        "@logtape/logtape": "npm:@jsr/logtape__logtape@0.4.2",
+        "c12": "^1.11.1",
+        "chalk": "^5.3.0",
+        "nanoid": "^5.0.7",
+        "ora": "^8.0.1",
+        "strip-ansi": "^7.1.0",
+        "zod": "^3.23.8",
+        "zod-validation-error": "^3.3.1"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^1.8.3",
+        "@types/bun": "^1.1.6"
+    },
+    "trustedDependencies": ["@biomejs/biome", "esbuild"]
+}
