@@ -28,7 +28,8 @@ export class Server {
      */
     public start(): void {
         serve({
-            port: 3000,
+            port: this.config.http.port,
+            host: this.config.http.host,
             fetch: (request: Request) => this.apiRouter.handleRequest(request),
         });
         logger.info`Server started at ${chalk.blue(`${this.config.http.host}:${this.config.http.port}`)}`;
