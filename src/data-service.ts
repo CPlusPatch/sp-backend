@@ -7,7 +7,7 @@ import { z } from "zod";
 interface DataRow {
     id: number;
     tags: string[];
-    bannerImage: string;
+    banner_image: string;
     links: string[];
     content: string;
 }
@@ -15,7 +15,7 @@ interface DataRow {
 const rowSchema = z.object({
     id: z.number(),
     tags: z.array(z.string()),
-    bannerImage: z.string(),
+    banner_image: z.string(),
     links: z.array(z.string()),
     content: z.string(),
 });
@@ -78,14 +78,14 @@ export class DataService {
      * @returns The ID of the newly inserted row.
      */
     public insertRow(row: Omit<DataRow, "id">): number {
-        const { tags, bannerImage, links, content } = row;
+        const { tags, banner_image, links, content } = row;
         const stmt = this.db.prepare(`
       INSERT INTO data_rows (tags, banner_image, links, content)
       VALUES (?, ?, ?, ?)
     `);
         const result = stmt.run(
             JSON.stringify(tags),
-            bannerImage,
+            banner_image,
             JSON.stringify(links),
             content,
         );
@@ -99,7 +99,7 @@ export class DataService {
      * @returns True if the update was successful, false otherwise.
      */
     public updateRow(id: number, row: Omit<DataRow, "id">): boolean {
-        const { tags, bannerImage, links, content } = row;
+        const { tags, banner_image, links, content } = row;
         const stmt = this.db.prepare(`
       UPDATE data_rows
       SET tags = ?, banner_image = ?, links = ?, content = ?
@@ -107,7 +107,7 @@ export class DataService {
     `);
         const result = stmt.run(
             JSON.stringify(tags),
-            bannerImage,
+            banner_image,
             JSON.stringify(links),
             content,
             id,

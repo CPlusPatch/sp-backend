@@ -27,16 +27,16 @@ export class APIRouter {
 
         try {
             switch (true) {
-                case path === "/api/rows" && method === "GET":
+                case path === "/api/v1/rows" && method === "GET":
                     return Promise.resolve(this.getAllRows());
                 case path.match(/^\/api\/rows\/\d+$/) && method === "GET":
                     return Promise.resolve(this.getRowById(path));
-                case path === "/api/rows" && method === "POST":
+                /* case path === "/api/rows" && method === "POST":
                     return this.createRow(request);
                 case path.match(/^\/api\/rows\/\d+$/) && method === "PUT":
                     return this.updateRow(path, request);
                 case path.match(/^\/api\/rows\/\d+$/) && method === "DELETE":
-                    return Promise.resolve(this.deleteRow(path));
+                    return Promise.resolve(this.deleteRow(path)); */
                 default:
                     return Promise.resolve(
                         new Response("Not Found", { status: 404 }),
@@ -82,6 +82,7 @@ export class APIRouter {
      * @param request - The incoming HTTP request.
      * @returns A Response object containing the ID of the newly created row.
      */
+    // @ts-expect-error Auth code not implemented yet, so API is read-only
     private async createRow(request: Request): Promise<Response> {
         const data = await request.json();
         const id = this.dataService.insertRow(data);
@@ -97,6 +98,7 @@ export class APIRouter {
      * @param request - The incoming HTTP request.
      * @returns A Response object indicating success or failure.
      */
+    // @ts-expect-error Auth code not implemented yet, so API is read-only
     private async updateRow(path: string, request: Request): Promise<Response> {
         const id = Number.parseInt(path.split("/").pop() || "");
         const data = await request.json();
@@ -112,6 +114,7 @@ export class APIRouter {
      * @param path - The request path containing the row ID.
      * @returns A Response object indicating success or failure.
      */
+    // @ts-expect-error Auth code not implemented yet, so API is read-only
     private deleteRow(path: string): Response {
         const id = Number.parseInt(path.split("/").pop() || "");
         const success = this.dataService.deleteRow(id);
