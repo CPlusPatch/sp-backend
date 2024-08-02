@@ -1,6 +1,6 @@
-import { expect, test, describe } from "bun:test";
-import { Server } from "./main";
+import { describe, expect, test } from "bun:test";
 import type { IConfig } from "./config";
+import { Server } from "./main";
 
 describe("Server", () => {
     test("initialization creates a Server instance", () => {
