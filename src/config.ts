@@ -14,6 +14,9 @@ const ConfigSchema = z.object({
             port: 3000,
             host: "0.0.0.0",
         }),
+    auth: z.object({
+        token: z.string(),
+    }),
     logging: z
         .object({
             level: z

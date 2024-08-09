@@ -7,6 +7,7 @@ describe("Server", () => {
         const mockConfig: IConfig = {
             sqlite: { database: ":memory:" },
             http: { host: "localhost", port: 3000 },
+            auth: { token: "test" },
             environment: "debug",
             logging: { level: "info" },
         };

@@ -20,7 +20,7 @@ export class Server {
     constructor(private config: IConfig) {
         this.db = new Database(config.sqlite.database);
         this.dataService = new DataService(this.db);
-        this.apiRouter = new APIRouter(this.dataService);
+        this.apiRouter = new APIRouter(this.dataService, config);
     }
 
     /**
@@ -29,7 +29,7 @@ export class Server {
     public start(): void {
         serve({
             port: this.config.http.port,
-            host: this.config.http.host,
+            hostname: this.config.http.host,
             fetch: (request: Request) => this.apiRouter.handleRequest(request),
         });
         logger.info`Server started at ${chalk.blue(`${this.config.http.host}:${this.config.http.port}`)}`;

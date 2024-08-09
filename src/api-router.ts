@@ -1,18 +1,30 @@
+import { type Context, Hono, type HonoRequest } from "hono";
+import { cors } from "hono/cors";
+import type { IConfig } from "./config";
 import type { DataService } from "./data-service";
-import { logger } from "./logging";
 
-/**
- * Router class for handling API requests.
- */
 export class APIRouter {
-    private dataService: DataService;
+    private app: Hono;
 
     /**
-     * Initializes the APIRouter with a DataService instance.
+     * Initializes the APIRouter with a DataService instance and configuration.
      * @param dataService - The DataService instance for database operations.
+     * @param config - The configuration object containing the auth token.
      */
-    constructor(dataService: DataService) {
-        this.dataService = dataService;
+    constructor(
+        private dataService: DataService,
+        private readonly config: IConfig,
+    ) {
+        this.app = new Hono();
+
+        // Enable CORS
+        this.app.use(cors());
+
+        this.app.get("/api/v1/rows", (c) => this.getAllRows(c));
+        this.app.get("/api/rows/:id", (c) => this.getRowById(c));
+        this.app.post("/api/rows", (c) => this.createRow(c));
+        this.app.put("/api/rows/:id", (c) => this.updateRow(c));
+        this.app.delete("/api/rows/:id", (c) => this.deleteRow(c));
     }
 
     /**
@@ -21,172 +33,89 @@ export class APIRouter {
      * @returns A Response object.
      */
     public handleRequest(request: Request): Promise<Response> {
-        const url = new URL(request.url);
-        const path = url.pathname;
-        const method = request.method;
-
-        logger.debug`Handling request: ${method} ${path}`;
-
-        try {
-            switch (true) {
-                case path === "/api/v1/rows" && method === "GET":
-                    return Promise.resolve(this.getAllRows());
-                case path.match(/^\/api\/rows\/\d+$/) && method === "GET":
-                    return Promise.resolve(this.getRowById(path));
-                /* case path === "/api/rows" && method === "POST":
-                    return this.createRow(request);
-                case path.match(/^\/api\/rows\/\d+$/) && method === "PUT":
-                    return this.updateRow(path, request);
-                case path.match(/^\/api\/rows\/\d+$/) && method === "DELETE":
-                    return Promise.resolve(this.deleteRow(path)); */
-                default:
-                    return Promise.resolve(
-                        new Response("Not Found", {
-                            status: 404,
-                            headers: {
-                                "Access-Control-Allow-Origin": "*",
-                                "Access-Control-Allow-Methods":
-                                    "GET, POST, PUT, DELETE",
-                                "Access-Control-Allow-Headers": "Content-Type",
-                            },
-                        }),
-                    );
-            }
-        } catch (error) {
-            logger.error`Error handling request: ${error}`;
-            return Promise.resolve(
-                new Response("Internal Server Error", {
-                    status: 500,
-                    headers: {
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods":
-                            "GET, POST, PUT, DELETE",
-                        "Access-Control-Allow-Headers": "Content-Type",
-                    },
-                }),
-            );
-        }
+        return Promise.resolve(this.app.fetch(request));
     }
 
     /**
      * Handles GET request for all rows.
+     * @param c - The Hono context.
      * @returns A Response object containing all rows.
      */
-    private getAllRows(): Response {
+    private getAllRows(c: Context): Response {
         const rows = this.dataService.getAllRows();
-        return new Response(JSON.stringify(rows), {
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        });
+        return c.json(rows);
     }
 
     /**
      * Handles GET request for a single row by ID.
-     * @param path - The request path containing the row ID.
+     * @param c - The Hono context.
      * @returns A Response object containing the requested row or a 404 if not found.
      */
-    private getRowById(path: string): Response {
-        const id = Number.parseInt(path.split("/").pop() || "");
+    private getRowById(c: Context): Response {
+        const id = Number.parseInt(c.req.param("id"));
         const row = this.dataService.getRowById(id);
         if (row) {
-            return new Response(JSON.stringify(row), {
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                    "Access-Control-Allow-Headers": "Content-Type",
-                },
-            });
+            return c.json(row);
         }
-        return new Response("Row not found", {
-            status: 404,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        });
+        return c.text("Row not found", 404);
     }
 
     /**
      * Handles POST request to create a new row.
-     * @param request - The incoming HTTP request.
+     * @param c - The Hono context.
      * @returns A Response object containing the ID of the newly created row.
      */
-    // @ts-expect-error Auth code not implemented yet, so API is read-only
-    private async createRow(request: Request): Promise<Response> {
-        const data = await request.json();
+    private async createRow(c: Context): Promise<Response> {
+        if (!this.isAuthorized(c.req)) {
+            return c.text("Unauthorized", 401);
+        }
+        const data = await c.req.json();
         const id = this.dataService.insertRow(data);
-        return new Response(JSON.stringify({ id }), {
-            status: 201,
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        });
+        return c.json({ id }, 201);
     }
 
     /**
      * Handles PUT request to update an existing row.
-     * @param path - The request path containing the row ID.
-     * @param request - The incoming HTTP request.
+     * @param c - The Hono context.
      * @returns A Response object indicating success or failure.
      */
-    // @ts-expect-error Auth code not implemented yet, so API is read-only
-    private async updateRow(path: string, request: Request): Promise<Response> {
-        const id = Number.parseInt(path.split("/").pop() || "");
-        const data = await request.json();
+    private async updateRow(c: Context): Promise<Response> {
+        if (!this.isAuthorized(c.req)) {
+            return c.text("Unauthorized", 401);
+        }
+        const id = Number.parseInt(c.req.param("id"));
+        const data = await c.req.json();
         const success = this.dataService.updateRow(id, data);
         if (success) {
-            return new Response("Row updated successfully", {
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                    "Access-Control-Allow-Headers": "Content-Type",
-                },
-            });
+            return c.text("Row updated successfully");
         }
-        return new Response("Row not found", {
-            status: 404,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        });
+        return c.text("Row not found", 404);
     }
 
     /**
      * Handles DELETE request to remove a row.
-     * @param path - The request path containing the row ID.
+     * @param c - The Hono context.
      * @returns A Response object indicating success or failure.
      */
-    // @ts-expect-error Auth code not implemented yet, so API is read-only
-    private deleteRow(path: string): Response {
-        const id = Number.parseInt(path.split("/").pop() || "");
+    private deleteRow(c: Context): Response {
+        if (!this.isAuthorized(c.req)) {
+            return c.text("Unauthorized", 401);
+        }
+        const id = Number.parseInt(c.req.param("id"));
         const success = this.dataService.deleteRow(id);
         if (success) {
-            return new Response("Row deleted successfully", {
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                    "Access-Control-Allow-Headers": "Content-Type",
-                },
-            });
+            return c.text("Row deleted successfully");
         }
-        return new Response("Row not found", {
-            status: 404,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE",
-                "Access-Control-Allow-Headers": "Content-Type",
-            },
-        });
+        return c.text("Row not found", 404);
+    }
+
+    /**
+     * Checks if the request is authorized.
+     * @param request - The incoming HTTP request.
+     * @returns A boolean indicating if the request is authorized.
+     */
+    private isAuthorized(request: HonoRequest): boolean {
+        const authHeader = request.header("Authorization");
+        return authHeader === `Bearer ${this.config.auth.token}`;
     }
 }
