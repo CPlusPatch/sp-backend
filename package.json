@@ -16,6 +16,7 @@
     },
     "packageManager": "bun@1.1.18",
     "dependencies": {
+        "@hono/zod-validator": "^0.2.2",
         "@logtape/logtape": "npm:@jsr/logtape__logtape@0.4.2",
         "c12": "^1.11.1",
         "chalk": "^5.3.0",

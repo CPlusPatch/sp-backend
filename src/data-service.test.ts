@@ -29,7 +29,7 @@ describe("DataService", () => {
 
     test("getRowById returns null for non-existent row", () => {
         const dataService = new DataService(mockDb);
-        const row = dataService.getRowById(1);
+        const row = dataService.getRowById("1");
         expect(row).toBeNull();
     });
 
@@ -43,7 +43,7 @@ describe("DataService", () => {
             title: "Test title",
         };
         const id = dataService.insertRow(newRow);
-        expect(id).toBe(1);
+        expect(id).toBe("1");
     });
 
     test("updateRow returns true for successful update", () => {
@@ -55,13 +55,13 @@ describe("DataService", () => {
             content: "Updated content",
             title: "Updated title",
         };
-        const success = dataService.updateRow(1, updatedRow);
+        const success = dataService.updateRow("1", updatedRow);
         expect(success).toBe(true);
     });
 
     test("deleteRow returns true for successful deletion", () => {
         const dataService = new DataService(mockDb);
-        const success = dataService.deleteRow(1);
+        const success = dataService.deleteRow("1");
         expect(success).toBe(true);
     });
 });

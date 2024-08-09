@@ -5,7 +5,7 @@ import { z } from "zod";
  * Represents a data row in the database.
  */
 interface DataRow {
-    id: number;
+    id: string;
     tags: string[];
     banner_image: string;
     links: string[];
@@ -15,7 +15,7 @@ interface DataRow {
 }
 
 const rowSchema = z.object({
-    id: z.number(),
+    id: z.coerce.string(),
     tags: z.array(z.string()),
     banner_image: z.string(),
     links: z.array(z.string()),
@@ -72,7 +72,7 @@ export class DataService {
      * @param id - The ID of the data row to retrieve.
      * @returns The DataRow object if found, or null if not found.
      */
-    public getRowById(id: number): DataRow | null {
+    public getRowById(id: string): DataRow | null {
         const row = this.db
             .query("SELECT * FROM data_rows WHERE id = ?")
             .get(id);
@@ -84,19 +84,20 @@ export class DataService {
      * @param row - The DataRow object to insert.
      * @returns The ID of the newly inserted row.
      */
-    public insertRow(row: Omit<DataRow, "id" | "created_at">): number {
-        const { tags, banner_image, links, content } = row;
+    public insertRow(row: Omit<DataRow, "id" | "created_at">): string {
+        const { tags, banner_image, links, content, title } = row;
         const stmt = this.db.prepare(`
-      INSERT INTO data_rows (tags, banner_image, links, content)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO data_rows (tags, banner_image, links, content, title)
+      VALUES (?, ?, ?, ?, ?)
     `);
         const result = stmt.run(
             JSON.stringify(tags),
             banner_image,
             JSON.stringify(links),
             content,
+            title,
         );
-        return result.lastInsertRowid as number;
+        return String(result.lastInsertRowid);
     }
 
     /**
@@ -106,22 +107,45 @@ export class DataService {
      * @returns True if the update was successful, false otherwise.
      */
     public updateRow(
-        id: number,
-        row: Omit<DataRow, "id" | "created_at">,
+        id: string,
+        row: Partial<Omit<DataRow, "id" | "created_at">>,
     ): boolean {
-        const { tags, banner_image, links, content } = row;
+        const fields: string[] = [];
+        const values: string[] = [];
+
+        if (row.tags !== undefined) {
+            fields.push("tags = ?");
+            values.push(JSON.stringify(row.tags));
+        }
+        if (row.banner_image !== undefined) {
+            fields.push("banner_image = ?");
+            values.push(row.banner_image);
+        }
+        if (row.links !== undefined) {
+            fields.push("links = ?");
+            values.push(JSON.stringify(row.links));
+        }
+        if (row.content !== undefined) {
+            fields.push("content = ?");
+            values.push(row.content);
+        }
+        if (row.title !== undefined) {
+            fields.push("title = ?");
+            values.push(row.title);
+        }
+
+        if (fields.length === 0) {
+            return false; // No fields to update
+        }
+
         const stmt = this.db.prepare(`
-      UPDATE data_rows
-      SET tags = ?, banner_image = ?, links = ?, content = ?
-      WHERE id = ?
+        UPDATE data_rows
+        SET ${fields.join(", ")}
+        WHERE id = ?
     `);
-        const result = stmt.run(
-            JSON.stringify(tags),
-            banner_image,
-            JSON.stringify(links),
-            content,
-            id,
-        );
+        values.push(id);
+
+        const result = stmt.run(...values);
         return result.changes > 0;
     }
 
@@ -130,7 +154,7 @@ export class DataService {
      * @param id - The ID of the row to delete.
      * @returns True if the deletion was successful, false otherwise.
      */
-    public deleteRow(id: number): boolean {
+    public deleteRow(id: string): boolean {
         const stmt = this.db.prepare("DELETE FROM data_rows WHERE id = ?");
         const result = stmt.run(id);
         return result.changes > 0;

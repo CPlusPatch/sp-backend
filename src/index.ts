@@ -23,4 +23,5 @@ const config = await Config.load();
 await configureLoggers(false, config.config);
 
 const server = new Server(config.config);
+await server.init();
 server.start();

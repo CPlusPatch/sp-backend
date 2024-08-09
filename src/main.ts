@@ -12,7 +12,7 @@ import { logger } from "./logging";
 export class Server {
     private db: Database;
     private dataService: DataService;
-    private apiRouter: APIRouter;
+    public apiRouter: APIRouter;
 
     /**
      * Initializes the server with a database connection, data service, and API router.
@@ -20,7 +20,11 @@ export class Server {
     constructor(private config: IConfig) {
         this.db = new Database(config.sqlite.database);
         this.dataService = new DataService(this.db);
-        this.apiRouter = new APIRouter(this.dataService, config);
+        this.apiRouter = new APIRouter(this.dataService);
+    }
+
+    public async init(): Promise<void> {
+        await this.apiRouter.registerRoutes();
     }
 
     /**
