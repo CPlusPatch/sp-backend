@@ -1,6 +1,6 @@
-import { Config } from "./config";
-import { configureLoggers, logger } from "./logging";
-import { Server } from "./main";
+import { Config } from "./src/config";
+import { configureLoggers, logger } from "./src/logging";
+import { Server } from "./src/main";
 
 process.on("SIGINT", () => {
     process.exit();

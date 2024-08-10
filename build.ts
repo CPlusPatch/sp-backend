@@ -7,7 +7,7 @@ const buildSpinner = ora("Building").start();
 await $`rm -rf dist && mkdir dist`;
 
 await Bun.build({
-    entrypoints: ["src/index.ts", ...Object.values(routes)],
+    entrypoints: ["index.ts", ...Object.values(routes)],
     outdir: "dist",
     target: "bun",
     splitting: true,
