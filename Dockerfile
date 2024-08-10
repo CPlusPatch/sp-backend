@@ -18,6 +18,6 @@ FROM base AS production
 
 COPY --from=builder /app/dist /app/dist
 
-WORKDIR /app
+WORKDIR /app/dist
 # Specify the command to run the application
-CMD ["bun", "run", "dist/src/index.js"]
+CMD ["bun", "run", "index.js"]
