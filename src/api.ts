@@ -1,7 +1,7 @@
 import type { Hono, MiddlewareHandler } from "hono";
 import type { ApiRouteMetadata } from "~/types/responses";
-import type { DataService } from "./data-service";
 import { Config } from "./config";
+import type { DataService } from "./data-service";
 
 const config = await Config.load();
 

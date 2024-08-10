@@ -20,4 +20,4 @@ COPY --from=builder /app/dist /app/dist
 
 WORKDIR /app
 # Specify the command to run the application
-CMD ["bun", "run", "dist/index.js"]
+CMD ["bun", "run", "dist/src/index.js"]

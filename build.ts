@@ -1,12 +1,13 @@
 import { $ } from "bun";
 import ora from "ora";
+import { routes } from "./routes";
 
 const buildSpinner = ora("Building").start();
 
 await $`rm -rf dist && mkdir dist`;
 
 await Bun.build({
-    entrypoints: ["src/index.ts"],
+    entrypoints: ["src/index.ts", ...Object.values(routes)],
     outdir: "dist",
     target: "bun",
     splitting: true,

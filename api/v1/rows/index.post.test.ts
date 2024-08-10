@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { fakeRequest, config } from "~/test/utils";
+import { config, fakeRequest } from "~/test/utils";
 import { meta } from "./index.post";
 
 describe(meta.route, () => {
