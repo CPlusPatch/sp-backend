@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite";
 import { serve } from "bun";
 import chalk from "chalk";
-import { APIRouter } from "./api-router";
+import { APIRouter } from "../router";
 import type { IConfig } from "./config";
 import { DataService } from "./data-service";
 import { logger } from "./logging";
