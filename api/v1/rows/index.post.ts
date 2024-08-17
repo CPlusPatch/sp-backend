@@ -13,7 +13,7 @@ export const meta = applyConfig({
 const schema = {
     body: z.object({
         tags: z.array(z.string()).default([]),
-        title: z.string(),
+        title: z.string().min(1),
         banner_image: z.string().url().or(z.literal("")).default(""),
         links: z.array(z.string().url()).default([]),
         content: z.string().default(""),

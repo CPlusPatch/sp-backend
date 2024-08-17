@@ -16,7 +16,7 @@ const schema = {
     }),
     body: z.object({
         tags: z.array(z.string()).optional(),
-        title: z.string().optional(),
+        title: z.string().min(1).optional(),
         banner_image: z.string().url().or(z.literal("")).optional(),
         links: z.array(z.string().url()).optional(),
         content: z.string().optional(),
