@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config, fakeRequest } from "~/test/utils";
-import { meta } from "./index.put";
+import { openApiRoute } from "./index.put";
 
 let id: string;
 
@@ -30,17 +30,20 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    const response = await fakeRequest(`${meta.route.replace(":id", id)}`, {
-        method: "DELETE",
-        headers: {
-            Authorization: `Bearer ${config.config.auth.token}`,
+    const response = await fakeRequest(
+        `${openApiRoute.getRoutingPath().replace(":id", id)}`,
+        {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${config.config.auth.token}`,
+            },
         },
-    });
+    );
 
     expect(response.status).toBe(200);
 });
 
-describe(meta.route, () => {
+describe(openApiRoute.getRoutingPath(), () => {
     test("Should update an existing row and return success message", async () => {
         const requestBody = {
             tags: ["updatedTag1", "updatedTag2"],
@@ -50,14 +53,17 @@ describe(meta.route, () => {
             content: "Updated content",
         };
 
-        const response = await fakeRequest(`${meta.route.replace(":id", id)}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${config.config.auth.token}`,
+        const response = await fakeRequest(
+            `${openApiRoute.getRoutingPath().replace(":id", id)}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${config.config.auth.token}`,
+                },
+                body: JSON.stringify(requestBody),
             },
-            body: JSON.stringify(requestBody),
-        });
+        );
 
         expect(response.status).toBe(200);
 
@@ -82,13 +88,16 @@ describe(meta.route, () => {
             content: "Updated content",
         };
 
-        const response = await fakeRequest(`${meta.route.replace(":id", id)}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
+        const response = await fakeRequest(
+            `${openApiRoute.getRoutingPath().replace(":id", id)}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(requestBody),
             },
-            body: JSON.stringify(requestBody),
-        });
+        );
 
         expect(response.status).toBe(401);
     });
@@ -103,7 +112,7 @@ describe(meta.route, () => {
         };
 
         const response = await fakeRequest(
-            `${meta.route.replace(":id", "9999")}`,
+            `${openApiRoute.getRoutingPath().replace(":id", "9999")}`,
             {
                 method: "PUT",
                 headers: {
@@ -129,14 +138,17 @@ describe(meta.route, () => {
             content: "Updated content",
         };
 
-        const response = await fakeRequest(`${meta.route.replace(":id", id)}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${config.config.auth.token}`,
+        const response = await fakeRequest(
+            `${openApiRoute.getRoutingPath().replace(":id", id)}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${config.config.auth.token}`,
+                },
+                body: JSON.stringify(invalidRequestBody),
             },
-            body: JSON.stringify(invalidRequestBody),
-        });
+        );
 
         expect(response.status).toBe(400);
     });

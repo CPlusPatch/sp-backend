@@ -17,6 +17,8 @@
     },
     "packageManager": "bun@1.1.18",
     "dependencies": {
+        "@hono/swagger-ui": "^0.4.1",
+        "@hono/zod-openapi": "^0.16.0",
         "@hono/zod-validator": "^0.2.2",
         "@logtape/logtape": "npm:@jsr/logtape__logtape@0.4.2",
         "c12": "^1.11.1",

@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { config, fakeRequest } from "~/test/utils";
-import { meta } from "./index.delete";
+import { openApiRoute } from "./index.delete";
 
 let id: string;
 
@@ -29,14 +29,17 @@ beforeAll(async () => {
     id = body.id;
 });
 
-describe(meta.route, () => {
+describe(openApiRoute.getRoutingPath(), () => {
     test("Should delete a row by ID and return success message", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${config.config.auth.token}`,
+        const response = await fakeRequest(
+            openApiRoute.getRoutingPath().replace(":id", id),
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${config.config.auth.token}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(200);
 
@@ -46,20 +49,26 @@ describe(meta.route, () => {
     });
 
     test("Should return 401 Unauthorized if no token is provided", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
-            method: "DELETE",
-        });
+        const response = await fakeRequest(
+            openApiRoute.getRoutingPath().replace(":id", id),
+            {
+                method: "DELETE",
+            },
+        );
 
         expect(response.status).toBe(401);
     });
 
     test("Should return 404 Not Found if the row does not exist", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", "9999"), {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${config.config.auth.token}`,
+        const response = await fakeRequest(
+            openApiRoute.getRoutingPath().replace(":id", "9999"),
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${config.config.auth.token}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(404);
 

@@ -1,4 +1,5 @@
-import type { Hono, MiddlewareHandler } from "hono";
+import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { MiddlewareHandler } from "hono";
 import type { ApiRouteMetadata, Env } from "~/types/responses";
 import { Config } from "./config";
 
@@ -21,4 +22,4 @@ export const auth = (
     };
 };
 
-export const apiRoute = (fn: (app: Hono<Env>) => void) => fn;
+export const apiRoute = (fn: (app: OpenAPIHono<Env>) => void) => fn;

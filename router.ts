@@ -1,6 +1,7 @@
 import type { IConfig } from "@/config";
+import { swaggerUI } from "@hono/swagger-ui";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { routes } from "~/routes";
@@ -8,11 +9,11 @@ import type { ApiRouteExports, Env } from "~/types/responses";
 import { getDb } from "./drizzle/db";
 
 export class APIRouter {
-    private app: Hono<Env>;
+    private app: OpenAPIHono<Env>;
     private db: BunSQLiteDatabase;
 
     constructor(config: IConfig) {
-        this.app = new Hono<Env>();
+        this.app = new OpenAPIHono<Env>();
         this.db = getDb(config.sqlite.database);
 
         this.app.use(cors());
@@ -23,6 +24,14 @@ export class APIRouter {
                 await next();
             }),
         );
+        this.app.doc31("/openapi.json", {
+            openapi: "3.1.0",
+            info: {
+                title: "Sidepages API",
+                version: "0.1.0",
+            },
+        });
+        this.app.get("/docs", swaggerUI({ url: "/openapi.json" }));
     }
 
     public async registerRoutes() {

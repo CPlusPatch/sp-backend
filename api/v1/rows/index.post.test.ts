@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { config, fakeRequest } from "~/test/utils";
-import { meta } from "./index.post";
+import { openApiRoute } from "./index.post";
 
-describe(meta.route, () => {
+describe(openApiRoute.getRoutingPath(), () => {
     test("Should create a new row and return its ID", async () => {
         const requestBody = {
             tags: ["tag1", "tag2"],
@@ -12,7 +12,7 @@ describe(meta.route, () => {
             content: "Test content",
         };
 
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest(openApiRoute.getRoutingPath(), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -38,7 +38,7 @@ describe(meta.route, () => {
             content: "Test content",
         };
 
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest(openApiRoute.getRoutingPath(), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -57,7 +57,7 @@ describe(meta.route, () => {
             content: "Test content",
         };
 
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest(openApiRoute.getRoutingPath(), {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

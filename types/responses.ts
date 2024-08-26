@@ -1,6 +1,6 @@
 import type { IConfig } from "@/config";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
-import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
 
 export type Json =
@@ -14,20 +14,12 @@ export type Json =
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 export interface ApiRouteMetadata {
-    allowedMethods: HttpVerb[];
-    route: string;
     auth: {
         required: boolean;
         methodOverrides?: {
             [Key in HttpVerb]?: boolean;
         };
         oauthPermissions?: string[];
-    };
-    challenge?: {
-        required: boolean;
-        methodOverrides?: {
-            [Key in HttpVerb]?: boolean;
-        };
     };
 }
 
@@ -44,5 +36,5 @@ export interface ApiRouteExports {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;
     }; */
-    default: (app: Hono<Env>) => RouterRoute;
+    default: (app: OpenAPIHono<Env>) => RouterRoute;
 }

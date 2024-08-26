@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config, fakeRequest } from "~/test/utils";
-import { meta } from "./index.get";
+import { openApiRoute } from "./index.get";
 
 let id: string;
 
@@ -30,21 +30,27 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    const response = await fakeRequest(`${meta.route.replace(":id", id)}`, {
-        method: "DELETE",
-        headers: {
-            Authorization: `Bearer ${config.config.auth.token}`,
+    const response = await fakeRequest(
+        `${openApiRoute.getRoutingPath().replace(":id", id)}`,
+        {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${config.config.auth.token}`,
+            },
         },
-    });
+    );
 
     expect(response.status).toBe(200);
 });
 
-describe(meta.route, () => {
+describe(openApiRoute.getRoutingPath(), () => {
     test("Should return a row by ID", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
-            method: "GET",
-        });
+        const response = await fakeRequest(
+            openApiRoute.getRoutingPath().replace(":id", id),
+            {
+                method: "GET",
+            },
+        );
 
         expect(response.status).toBe(200);
 
@@ -54,9 +60,12 @@ describe(meta.route, () => {
     });
 
     test("Should return 404 Not Found if the row does not exist", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", "9999"), {
-            method: "GET",
-        });
+        const response = await fakeRequest(
+            openApiRoute.getRoutingPath().replace(":id", "9999"),
+            {
+                method: "GET",
+            },
+        );
 
         expect(response.status).toBe(404);
 

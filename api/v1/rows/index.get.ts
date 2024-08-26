@@ -1,22 +1,33 @@
 import { apiRoute, applyConfig, auth } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { dataRows } from "~/drizzle/schema";
+import { FullDataRowSchema } from "~/types/schemas";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },
-    route: "/api/v1/rows",
+});
+
+export const openApiRoute = createRoute({
+    method: "get",
+    path: "/api/v1/rows",
+    middleware: [auth(meta.auth)],
+    responses: {
+        200: {
+            description: "Success",
+            content: {
+                "application/json": {
+                    schema: z.array(FullDataRowSchema),
+                },
+            },
+        },
+    },
 });
 
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        auth(meta.auth),
-        async (context) => {
-            const rows = await context.get("database").select().from(dataRows);
-            return context.json(rows);
-        },
-    ),
+    app.openapi(openApiRoute, async (context) => {
+        const rows = await context.get("database").select().from(dataRows);
+        return context.json(rows);
+    }),
 );

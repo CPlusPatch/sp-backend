@@ -1,66 +1,72 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { zValidator } from "@hono/zod-validator";
-import { z } from "zod";
+import { createRoute } from "@hono/zod-openapi";
 import { dataRows } from "~/drizzle/schema";
-import type { Json } from "~/types/responses";
+import { DataRowSchema, FullDataRowSchema } from "~/types/schemas";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     auth: {
         required: true,
     },
-    route: "/api/v1/rows",
 });
 
-const schema = {
-    body: z.object({
-        tags: z.array(z.string()).default([]),
-        title: z.string().min(1).optional(),
-        image: z.string().url().optional(),
-        links: z.array(z.string().url()).default([]),
-        // Any JSON value
-        data: z
-            .unknown()
-            .refine(
-                (value) => {
-                    try {
-                        JSON.parse(value as string);
-                        return true;
-                    } catch {
-                        return false;
-                    }
+export const openApiRoute = createRoute({
+    method: "post",
+    path: "/api/v1/rows",
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: DataRowSchema,
                 },
-                { message: "Invalid JSON" },
-            )
-            .transform((value) => JSON.parse(value as string) as Json)
-            .optional(),
-        content: z.string().default(""),
-    }),
-};
+            },
+        },
+    },
+    middleware: [auth(meta.auth)],
+    responses: {
+        201: {
+            description: "Created",
+            content: {
+                "application/json": {
+                    schema: FullDataRowSchema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: {
+                        type: "object",
+                        properties: {
+                            error: {
+                                type: "string",
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    },
+});
 
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        auth(meta.auth),
-        zValidator("json", schema.body),
-        async (context) => {
-            const data = context.req.valid("json");
-            const output = (
-                await context
-                    .get("database")
-                    .insert(dataRows)
-                    .values({
-                        content: data.content,
-                        data: data.data,
-                        image: data.image,
-                        links: data.links,
-                        tags: data.tags,
-                        title: data.title,
-                    })
-                    .returning()
-            )[0];
-            return context.json(output, 201);
-        },
-    ),
+    app.openapi(openApiRoute, async (context) => {
+        const data = context.req.valid("json");
+        const output = (
+            await context
+                .get("database")
+                .insert(dataRows)
+                .values({
+                    content: data.content,
+                    data: data.data,
+                    image: data.image,
+                    links: data.links,
+                    tags: data.tags,
+                    title: data.title,
+                })
+                .returning()
+        )[0];
+
+        return context.json(output, 201);
+    }),
 );
