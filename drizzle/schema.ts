@@ -12,7 +12,7 @@ export const dataRows = sqliteTable("data_rows", {
         .$type<string[]>()
         .default([])
         .notNull(),
-    image: text("banner_image"),
+    image: text("image"),
     links: text("links", { mode: "json" })
         .$type<string[]>()
         .default([])

@@ -8,7 +8,7 @@ beforeAll(async () => {
     const requestBody = {
         tags: ["tag1", "tag2"],
         title: "Title",
-        banner_image: "https://example.com/image.jpg",
+        image: "https://example.com/image.jpg",
         links: ["https://example.com"],
         content: "Content",
     };

@@ -16,7 +16,7 @@ const schema = {
     body: z.object({
         tags: z.array(z.string()).default([]),
         title: z.string().min(1).optional(),
-        banner_image: z.string().url().optional(),
+        image: z.string().url().optional(),
         links: z.array(z.string().url()).default([]),
         // Any JSON value
         data: z
@@ -53,7 +53,7 @@ export default apiRoute((app) =>
                     .values({
                         content: data.content,
                         data: data.data,
-                        image: data.banner_image,
+                        image: data.image,
                         links: data.links,
                         tags: data.tags,
                         title: data.title,

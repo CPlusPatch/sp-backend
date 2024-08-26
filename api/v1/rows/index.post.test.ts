@@ -7,7 +7,7 @@ describe(meta.route, () => {
         const requestBody = {
             tags: ["tag1", "tag2"],
             title: "Test Title",
-            banner_image: "https://example.com/image.jpg",
+            image: "https://example.com/image.jpg",
             links: ["https://example.com"],
             content: "Test content",
         };
@@ -33,7 +33,7 @@ describe(meta.route, () => {
         const requestBody = {
             tags: ["tag1", "tag2"],
             title: "Test Title",
-            banner_image: "https://example.com/image.jpg",
+            image: "https://example.com/image.jpg",
             links: ["https://example.com"],
             content: "Test content",
         };
@@ -52,7 +52,7 @@ describe(meta.route, () => {
     test("Should return 400 Bad Request if the request body is invalid", async () => {
         const invalidRequestBody = {
             title: "Test Title",
-            banner_image: "invalid_url", // Invalid URL
+            image: "invalid_url", // Invalid URL
             links: ["invalid_url"], // Invalid URL
             content: "Test content",
         };

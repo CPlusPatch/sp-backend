@@ -1,0 +1,1 @@
+ALTER TABLE `data_rows` RENAME COLUMN `banner_image` TO `image`;
