@@ -21,7 +21,7 @@ export const dataRows = sqliteTable("data_rows", {
     data: text("data", { mode: "json" }).$type<Json>(),
     content: text("content"),
     title: text("title"),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    created_at: integer("created_at", { mode: "timestamp" })
         .default(sql`CURRENT_TIMESTAMP`)
         .notNull(),
 });

@@ -29,6 +29,6 @@ export const DataRowSchema = z.object({
 export const FullDataRowSchema = DataRowSchema.merge(
     z.object({
         id: z.number().int(),
-        createdAt: z.string(),
+        created_at: z.string(),
     }),
 );

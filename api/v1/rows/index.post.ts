@@ -63,6 +63,7 @@ export default apiRoute((app) =>
                     links: data.links,
                     tags: data.tags,
                     title: data.title,
+                    created_at: new Date(),
                 })
                 .returning()
         )[0];
