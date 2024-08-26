@@ -1,7 +1,6 @@
 import type { Hono, MiddlewareHandler } from "hono";
-import type { ApiRouteMetadata } from "~/types/responses";
+import type { ApiRouteMetadata, Env } from "~/types/responses";
 import { Config } from "./config";
-import type { DataService } from "./data-service";
 
 const config = await Config.load();
 
@@ -22,12 +21,4 @@ export const auth = (
     };
 };
 
-export const apiRoute = (
-    fn: (
-        app: Hono<{
-            Bindings: {
-                dataService: DataService;
-            };
-        }>,
-    ) => void,
-) => fn;
+export const apiRoute = (fn: (app: Hono<Env>) => void) => fn;

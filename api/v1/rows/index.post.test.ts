@@ -26,7 +26,7 @@ describe(meta.route, () => {
         const body = await response.json();
 
         expect(body).toHaveProperty("id");
-        expect(body.id).toBeString();
+        expect(body.id).toBeNumber();
     });
 
     test("Should return 401 Unauthorized if no token is provided", async () => {

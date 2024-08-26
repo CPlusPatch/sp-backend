@@ -1,17 +1,28 @@
+import type { IConfig } from "@/config";
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { createMiddleware } from "hono/factory";
 import { routes } from "~/routes";
-import type { ApiRouteExports } from "~/types/responses";
-import type { DataService } from "./src/data-service";
+import type { ApiRouteExports, Env } from "~/types/responses";
+import { getDb } from "./drizzle/db";
 
 export class APIRouter {
-    private app: Hono;
+    private app: Hono<Env>;
+    private db: BunSQLiteDatabase;
 
-    constructor(private dataService: DataService) {
-        this.app = new Hono();
+    constructor(config: IConfig) {
+        this.app = new Hono<Env>();
+        this.db = getDb(config.sqlite.database);
 
-        // Enable CORS
         this.app.use(cors());
+        this.app.use(
+            createMiddleware<Env>(async (c, next) => {
+                c.set("config", config);
+                c.set("database", this.db);
+                await next();
+            }),
+        );
     }
 
     public async registerRoutes() {
@@ -31,10 +42,6 @@ export class APIRouter {
     }
 
     public handleRequest(request: Request): Promise<Response> {
-        return Promise.resolve(
-            this.app.fetch(request, {
-                dataService: this.dataService,
-            }),
-        );
+        return Promise.resolve(this.app.fetch(request));
     }
 }

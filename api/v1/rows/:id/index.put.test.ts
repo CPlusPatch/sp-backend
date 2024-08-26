@@ -61,9 +61,16 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const body = await response.text();
+        const body = await response.json();
 
-        expect(body).toBe("Row updated successfully");
+        expect(body).toContainKeys([
+            "id",
+            "tags",
+            "title",
+            "image",
+            "links",
+            "content",
+        ]);
     });
 
     test("Should return 401 Unauthorized if no token is provided", async () => {

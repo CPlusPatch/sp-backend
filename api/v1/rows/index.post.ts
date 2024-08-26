@@ -1,6 +1,8 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
+import { dataRows } from "~/drizzle/schema";
+import type { Json } from "~/types/responses";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -13,9 +15,25 @@ export const meta = applyConfig({
 const schema = {
     body: z.object({
         tags: z.array(z.string()).default([]),
-        title: z.string().min(1),
-        banner_image: z.string().url().or(z.literal("")).default(""),
+        title: z.string().min(1).optional(),
+        banner_image: z.string().url().optional(),
         links: z.array(z.string().url()).default([]),
+        // Any JSON value
+        data: z
+            .unknown()
+            .refine(
+                (value) => {
+                    try {
+                        JSON.parse(value as string);
+                        return true;
+                    } catch {
+                        return false;
+                    }
+                },
+                { message: "Invalid JSON" },
+            )
+            .transform((value) => JSON.parse(value as string) as Json)
+            .optional(),
         content: z.string().default(""),
     }),
 };
@@ -26,10 +44,23 @@ export default apiRoute((app) =>
         meta.route,
         auth(meta.auth),
         zValidator("json", schema.body),
-        (context) => {
+        async (context) => {
             const data = context.req.valid("json");
-            const id = context.env.dataService.insertRow(data);
-            return context.json({ id }, 201);
+            const output = (
+                await context
+                    .get("database")
+                    .insert(dataRows)
+                    .values({
+                        content: data.content,
+                        data: data.data,
+                        image: data.banner_image,
+                        links: data.links,
+                        tags: data.tags,
+                        title: data.title,
+                    })
+                    .returning()
+            )[0];
+            return context.json(output, 201);
         },
     ),
 );

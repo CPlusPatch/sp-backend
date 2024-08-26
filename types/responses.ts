@@ -1,3 +1,5 @@
+import type { IConfig } from "@/config";
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
 
@@ -29,11 +31,18 @@ export interface ApiRouteMetadata {
     };
 }
 
+export type Env = {
+    Variables: {
+        database: BunSQLiteDatabase;
+        config: IConfig;
+    };
+};
+
 export interface ApiRouteExports {
     meta: ApiRouteMetadata;
     /* schemas?: {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;
     }; */
-    default: (app: Hono) => RouterRoute;
+    default: (app: Hono<Env>) => RouterRoute;
 }

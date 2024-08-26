@@ -18,4 +18,7 @@ await Bun.build({
     }
 });
 
+// Copy drizzle migrations
+await $`mkdir -p dist/drizzle && cp -r drizzle/migrations dist/drizzle`;
+
 buildSpinner.succeed();
