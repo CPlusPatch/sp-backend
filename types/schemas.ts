@@ -12,7 +12,7 @@ export const DataRowSchema = z.object({
         .refine(
             (value) => {
                 try {
-                    JSON.parse(value as string);
+                    JSON.parse(JSON.stringify(value) as string);
                     return true;
                 } catch {
                     return false;
@@ -20,7 +20,9 @@ export const DataRowSchema = z.object({
             },
             { message: "Invalid JSON" },
         )
-        .transform((value) => JSON.parse(value as string) as Json)
+        .transform(
+            (value) => JSON.parse(JSON.stringify(value) as string) as Json,
+        )
         .nullable()
         .optional(),
     content: z.string().nullable().optional(),
